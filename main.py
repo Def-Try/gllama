@@ -55,6 +55,8 @@ async def main(session: aiohttp.ClientSession):
 
     handler.register("run",  "<model>",
                      "Run model",                   commands.RunModel)
+    handler.register("embed", "<model>",
+                     "Run embedding model",         commands.RunEmbeddingModel)
     handler.register("chat", "<model>",
                      "Run chat model",              commands.RunChatModel)
 

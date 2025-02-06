@@ -21,9 +21,7 @@ import config
 origin = config.get_value("origin")
 logging.info(f"Origin is {origin}")
 
-import ui
-import util
-import commands
+from gllama import ui, util, commands
 
 async def main(session: aiohttp.ClientSession):
 

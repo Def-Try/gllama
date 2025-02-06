@@ -1,13 +1,14 @@
 import traceback
 import asyncio
 import json
-import ui
 
-async def RunChatModel(session, config, _1, _2, args):
+from gllama import ui
+
+async def RunModel(session, config, _1, _2, args):
     origin = config.get_value("origin")
     model = args[0]
     async with ui.loading.LoadingCircle("Loading model") as status:
-        response = await session.post(f"{origin}/api/chat", json={"model": model})
+        response = await session.post(f"{origin}/api/generate", json={"model": model})
         if response.status != 200:
             await status.fail()
             print(ui.colors.colorize("origin: <fg_red>failed to load model"))
@@ -16,10 +17,11 @@ async def RunChatModel(session, config, _1, _2, args):
         print(ui.colors.colorize("origin: <fg_blue>success"))
     try:
         print(ui.colors.colorize("origin: <fg_blue>ready"))
-        print("Welcome to Chat UI.")
+        print("Welcome to Text Completion UI.")
         print("Start with \"[clear]\" to clear context before message")
+        print("End with \"[nonl]\" to avoid adding newline.")
         print("Run /help to show list of all commands")
-        messages = []
+        context = ""
         params = {}
         while True:
             inp = input("> ")
@@ -30,7 +32,7 @@ async def RunChatModel(session, config, _1, _2, args):
                     print(" /set <parameter> [value] - Set model parameter")
                     print("                            Run with no value to unset")
                     print(" /clear                   - Clear prompt")
-                    print(" /show                    - Show messages")
+                    print(" /show                    - Show LLM prompt")
                     print(" /quit                    - Quit this UI")
                     print(" /exit                    - ^")
                     print(" /end                     - ^")
@@ -52,29 +54,29 @@ async def RunChatModel(session, config, _1, _2, args):
                     continue
                 if inp == "/clear":
                     print("Context cleared")
-                    messages = []
+                    context = ""
                     continue
                 if inp == "/show":
                     print("Context:")
-                    print(f"  Total {len(messages)} messages")
-                    for message in messages[-5:]:
-                        print(ui.colors.colorize(f"<fg_blue>{message['role'].title()}\n")+
-                                                 message['content'])
+                    print(ui.colors.colorize(f"<fg_blue>{context}"))
                     continue
                 if inp == "/quit" or inp == "/exit" or inp == "/end":
                     break
+            inp += "\n"
             if inp.startswith("[clear]"):
-                messages = []
+                context = ""
                 inp = inp[7:]
-            messages += [{"role": "user", "content": inp}]
+            if inp.endswith("[nonl]\n"):
+                inp = inp[:-7]
+            context += inp
 
-            response = await session.post(f"{origin}/api/chat", json={"model": model,
-                                                                      "messages": messages,
-                                                                      "options": params})
-            messages += [{"role": "assistant", "content": ""}]
+            response = await session.post(f"{origin}/api/generate", json={"model": model,
+                                                                          "prompt": context,
+                                                                          "raw": True,
+                                                                          "options": params})
             tokens, length = 0, 0
-            print(ui.colors.colorize(f"<fg_blue>User<reset>\n{messages[-2]['content']}\n"+
-                                     f"<fg_blue>Assistant"))
+            print(ui.colors.colorize(f"<fg_blue>User<reset>\n{inp}\n"+
+                                     f"<fg_blue>Generation"))
             async with ui.typewriter.Typewriter() as writer:
                 while True:
                     try:
@@ -86,26 +88,21 @@ async def RunChatModel(session, config, _1, _2, args):
                     except asyncio.TimeoutError:
                         await writer.put(ui.colors.colorize(f" [<fg_red>TIMEOUT<reset>]"), False)
                         break
-                    if msg.get("error"):
-                        break
-                    messages[-1]["content"] += msg["message"]["content"]
-                    await writer.put(msg["message"]["content"])
+                    context += msg["response"]
+                    await writer.put(msg["response"])
                     if msg.get("done"):
                         break
                     tokens += 1
-                    length += len(msg["message"]["content"])
-            if msg.get("error"):
-                print(ui.colors.colorize(f"origin: <fg_red>{msg["error"]}"))
-            else:
-                print("="*80)
-                print(f"{length} chars\t{tokens} tokens\t{round(msg.get('eval_count', 1) / msg.get('eval_duration', 1) * 10**9, 2)} token/sec")     
+                    length += len(msg["response"])
+            print("="*80)
+            print(f"{length} chars\t{tokens} tokens\t{round(msg.get('eval_count', 1) / msg.get('eval_duration', 1) * 10**9, 2)} token/sec")     
     except BaseException as e:
         traceback.print_exc()
 
     print("Bye!")
 
     async with ui.loading.LoadingCircle("Unloading model") as status:
-        response = await session.post(f"{origin}/api/chat", json={"model": model, "keep_alive": 0})
+        response = await session.post(f"{origin}/api/generate", json={"model": model, "keep_alive": 0})
         if response.status != 200:
             await status.fail()
             print(ui.colors.colorize("origin: <fg_red>failed to unload model"))

@@ -1,5 +1,6 @@
 import humanize
-import ui
+
+from gllama import ui
 
 async def ListModels(session, config, _1, _2, _3):
     origin = config.get_value("origin")

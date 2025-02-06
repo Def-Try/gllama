@@ -2,7 +2,8 @@ import aiohttp
 import asyncio
 import humanize
 import json
-import ui
+
+from gllama import ui
 
 async def PullModel(session, config, _1, _2, args):
     origin = config.get_value("origin")

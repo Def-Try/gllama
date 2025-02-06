@@ -1,7 +1,8 @@
 import asyncio
 import traceback
 import aiohttp
-import ui
+
+from gllama import ui
 
 class CommandHandler:
     def __init__(self):

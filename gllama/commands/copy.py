@@ -1,4 +1,4 @@
-import ui
+from gllama import ui
 
 async def CopyModel(session, config, _1, _2, args):
     origin = config.get_value("origin")

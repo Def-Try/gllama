@@ -1,5 +1,6 @@
-import ui
 import aiohttp
+
+from gllama import ui
 
 async def OllamaOnline(session: aiohttp.ClientSession, origin: str) -> bool:
     ollama_online = False

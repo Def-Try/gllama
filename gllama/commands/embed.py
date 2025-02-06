@@ -1,7 +1,8 @@
 import traceback
 import asyncio
 import json
-import ui
+
+from gllama import ui
 
 async def RunEmbeddingModel(session, config, _1, _2, args):
     origin = config.get_value("origin")

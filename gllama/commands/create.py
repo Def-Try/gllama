@@ -1,8 +1,8 @@
 import aiohttp
 import json
-import ui
+import gllama.ui
 
-from util import digest
+from gllama.util import digest
 
 async def QuantizeModel(session, config, _1, _2, args):
     origin = config.get_value("origin")

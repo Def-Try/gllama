@@ -74,7 +74,7 @@ async def RunChatModel(session, config, _1, _2, args):
                                                                       "options": params})
             messages += [{"role": "assistant", "content": ""}]
             tokens, length = 0, 0
-            print(ui.colors.colorize(f"<fg_blue>User<reset>\n{messages[-2]['content']}\n"+
+            print(ui.colors.colorize(f"<fg_blue>User<reset>\n{messages[-2]['content'].replace('<', '\\<').replace('>', '\\>')}\n"+
                                      f"<fg_blue>Assistant"))
             async with ui.typewriter.Typewriter() as writer:
                 while True:

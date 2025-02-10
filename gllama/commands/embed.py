@@ -11,7 +11,6 @@ async def RunEmbeddingModel(session, config, _1, _2, args):
         print(ui.colors.colorize("origin: <fg_blue>ready"))
         print("Welcome to Embedding UI.")
         print("Run /help to show list of all commands")
-        context = ""
         params = {}
         while True:
             inp = input("> ")
@@ -62,7 +61,6 @@ async def RunEmbeddingModel(session, config, _1, _2, args):
                 if i % 30 == 0 and i != 0: print()
                 val = (val + 1) / 2
                 val = val * 256**3
-                # print(f"{val // 256**2 % 256:0.0f};{val // 256 % 256:0.0f};{val % 256:0.0f}", end='')
                 print(f"\x1b[38;2;{val // 256**2 % 256:0.0f};{val // 256 % 256:0.0f};{val % 256:0.0f}m██", end='')
             print(ui.colors.RESET)
     except BaseException as e:

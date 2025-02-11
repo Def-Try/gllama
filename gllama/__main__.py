@@ -5,6 +5,12 @@ import asyncio
 import sys
 import os
 
+if not os.path.exists("data"):
+    os.mkdir("data")
+    print("[INFO   ] Created data directory")
+if not os.path.isdir("data"):
+    print("[FATAL  ] Data is not a directory")
+    exit()
 if os.path.exists("data/log.log"):
     os.remove("data/log.log")
 logger = logging.getLogger("gllama")
@@ -24,11 +30,9 @@ logging.info(f"Origin is {origin}")
 from gllama import ui, util, commands
 
 async def main(session: aiohttp.ClientSession):
-
-
     ollama_online = await util.checks.OllamaOnline(session, origin)
     if not ollama_online:
-        print("Ollama is offline on the origin server!")
+        print("Origin is offline or could not reach Ollama")
 
     handler = ui.CommandHandler()
 
